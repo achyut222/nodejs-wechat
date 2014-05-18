@@ -63,14 +63,33 @@ describe('test Wechat and Session', function() {
       var _parser = parser;
       parser = function(req, res, next) {
         next();
-      }
+      };
       test(
         500, 
         function(session) {
           session.res.end();
         }, 
-        done);
-    })
+        function(e) {
+          parser = _parser;
+          done(e);
+        });
+    });
+    it('should return 500 if body is not correctly parsed', function(done) {
+      var _parser = parser;
+      parser = function(req, res, next) {
+        req.body = {};
+        next();
+      };
+      test(
+        500,
+        function(session) {
+          session.res.end();
+        },
+        function(e) {
+          parser = _parser;
+          done(e);
+        });
+    });
   });
 });
 
