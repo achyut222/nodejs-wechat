@@ -15,7 +15,9 @@ var opt = {
   token: 'TOKEN',
   url: '/'
 };
-var parse = xmlBodyParser();
+var parse = xmlBodyParser({
+  type: 'text/xml'
+});
 var wechat = new Wechat(opt);
 wechat.on('event.subscribe', function(session) {
   session.replyTextMsg('欢迎您关注我们的订阅号');
@@ -41,14 +43,16 @@ server.listen(80);
 var express = require('express');
 var app = express();
 var middlewares = require('express-middlewares-js');
-app.use('/weixin', middlewares.xmlBodyParser());
+app.use('/weixin', middlewares.xmlBodyParser({
+  type: 'text/xml'
+}));
 
 /*
   Alternative way
 
 var xmlBodyParser = require('express-xml-parser');
 app.use('/weixin', xmlBodyParser({
-  type: ['application/xmlplus', 'xml'],
+  type: 'text/xml',
   limit: '1mb'
 }));
 
@@ -91,6 +95,9 @@ wechat.on('voice', function(session) {
 
 app.listen(80);
 ```
+
+> __NOTE__: We apply `{ type: 'text/xml' }` to `xmlBodyParser` as weixin server 
+send us a `text/xml` content type instead of `application/xml`.
 
 ### __API__
 #### Wechat

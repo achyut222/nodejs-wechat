@@ -1,6 +1,6 @@
 {
   "name": "nodejs-wechat",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "nodejs wrapper of wechat(weixin) api - well tested and bug-free",
   "main": "index.js",
   "scripts": {
