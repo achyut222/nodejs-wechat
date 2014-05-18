@@ -1,6 +1,6 @@
 {
   "name": "nodejs-wechat",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "wechat api",
   "main": "index.js",
   "scripts": {
@@ -23,7 +23,8 @@
   },
   "homepage": "https://github.com/idy/nodejs-wechat",
   "dependencies": {
-    "require-all": "0.0.8"
+    "require-all": "0.0.8",
+    "mime": "~1.2.11"
   },
   "devDependencies": {
     "mocha": "~1.18.2",
