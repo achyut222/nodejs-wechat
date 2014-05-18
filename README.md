@@ -4,27 +4,63 @@
 
 Nodejs wrapper of wechat api
 
-### Usage
+### __Usage__
+#### Work with native http server
 ```javascript
+var http = require('http');
+var xmlBodyParser = require('express-xml-parser');
+var Wechat = require('nodejs-wechat');
+
+var opt = {
+  token: 'TOKEN',
+  url: '/'
+};
+var parse = xmlBodyParser();
+var wechat = new Wechat(opt);
+wechat.on('event.subscribe', function(session) {
+  session.replyTextMsg('欢迎您关注我们的订阅号');
+});
+var server = http.createServer(function(req, res) {
+  parse(req, res, function(err) {
+    if (err) {
+      res.end();
+      return;
+    }
+    wechat.handleRequest(req, res);
+  });
+});
+server.listen(80);
+```
+
+#### Work with express
+```javascript
+var express = require('express');
+var app = express();
+var middlewares = require('express-middlewares-js');
+app.use('/weixin', middlewares.xmlBodyParser());
+
+/*
+  Alternative way
+
+var xmlBodyParser = require('express-xml-parser');
+app.use('/weixin', xmlBodyParser({
+  type: ['application/xmlplus', 'xml'],
+  limit: '1mb'
+}));
+
+*/
+
 var Wechat = require('nodejs-wechat');
 var opt = {
   token: token,
   url: '/weixin'
 };
-var wechatInstance = new Wechat(opt);
+var wechat = new Wechat(opt);
 
-var express = require('express');
-var middlewares = require('express-middlewares-js');
-var app = express();
+app.get('/weixin', wechat.verifyRequest.bind(wechat));
+app.post('/weixin', wechat.handleRequest.bind(wechat));
 
-app.use('/weixin', Wechat.bodyParser());
-// alternative method
-// app.use('/weixin', middlewares.xmlBodyParser());
-
-app.get('/weixin', wechatInstance.verifyRequest.bind(wechatInstance));
-app.post('/weixin', wechatInstance.handleRequest.bind(wechatInstance));
-
-// you can work with other restful logics
+// you can also work with other restful routes
 app.use('/api', middlewares.bodyParser());
 
 wechat.on('text', function(session) {
@@ -48,9 +84,11 @@ wechat.on('voice', function(session) {
     ThumbMediaId: '..'
   });
 });
+
+app.listen(80);
 ```
 
-### Api
+### __API__
 #### Wechat
 - `#verifyRequest(req, res)`
   > This is a express/connect middleware, which verify the signature of
@@ -71,6 +109,29 @@ wechat.on('voice', function(session) {
   [接收事件推送](http://mp.weixin.qq.com/wiki/index.php?title=%E6%8E%A5%E6%94%B6%E4%BA%8B%E4%BB%B6%E6%8E%A8%E9%80%81 "接收事件推送")
 
 #### Session
+- `incomingMessage`
+  > This is a direct parse of weixin server request
+
+```xml
+<xml>
+<ToUserName><![CDATA[toUser]]></ToUserName>
+<FromUserName><![CDATA[FromUser]]></FromUserName>
+<CreateTime>123456789</CreateTime>
+<MsgType><![CDATA[event]]></MsgType>
+<Event><![CDATA[subscribe]]></Event>
+</xml>
+```
+Becomes
+```json
+{
+  "ToUserName": "toUser",
+  "FromUserName": "FromUser",
+  "CreateTime": "123456789",
+  "MsgType": "event",
+  "Event": "subscribe"
+}
+```
+
 - `req` 
   > This is the request from weixin server
 
@@ -88,3 +149,4 @@ wechat.on('voice', function(session) {
 
 ### TODO
 - Advanced interfaces
+  > Will finish advanced interfaces before July/2014, welcome send pull requests :)
