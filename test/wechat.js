@@ -9,9 +9,9 @@ var Wechat = require('../lib/wechat.js');
 
 var parser = xmlParser();
 
-describe('test Wechat and Session', function () {
-  describe('#replyMessage', function () {
-    it('should reply text message', function (done) {
+describe('test Wechat and Session', function() {
+  describe('#replyMessage', function() {
+    it('should reply text message', function(done) {
       test(
         messages.text.xml,
         function(session) {
@@ -23,8 +23,8 @@ describe('test Wechat and Session', function () {
         done);
     });
   });
-  describe('#replyTextMessage', function () {
-    it('should reply text message', function (done) {
+  describe('#replyTextMessage', function() {
+    it('should reply text message', function(done) {
       test(
         messages.text.xml,
         function(session) {
@@ -34,7 +34,7 @@ describe('test Wechat and Session', function () {
     });
   });
   describe('#replyNewsMessage', function() {
-    it('should reply news message', function (done) {
+    it('should reply news message', function(done) {
       test(
         messages.news.xml,
         function(session) {
@@ -43,9 +43,38 @@ describe('test Wechat and Session', function () {
         done);
     });
   });
+  describe('error cases', function() {
+    it('should return status 400 if request signature is not correct', function(done) {
+      var _signature = util.signature;
+      util.signature = function() {
+        return Math.random().toString();
+      }
+      test(
+        400,
+        function(session) {
+          session.res.end();
+        },
+        function(e) {
+          util.signature = _signature;
+          done(e);
+        });
+    });
+    it('should return 500 if body is not set', function(done) {
+      var _parser = parser;
+      parser = function(req, res, next) {
+        next();
+      }
+      test(
+        500, 
+        function(session) {
+          session.res.end();
+        }, 
+        done);
+    })
+  });
 });
 
-function test(outputXml, onText, cb) {
+function test(expected, handler, done) {
   var fakereqFilePath = __dirname + '/wechat.request.xml';
   var buf = fs.readFileSync(fakereqFilePath);
   var fakereq = fs.createReadStream(fakereqFilePath);
@@ -65,43 +94,65 @@ function test(outputXml, onText, cb) {
     echostr: echostr
   };
   fakereq.query.signature = util.signature(token, nonce, ts);
+  var output = '';
   var fakeres = {
+    statusCode: 200,
     setHeader: function() {},
-    end: function() {},
+    end: function() {
+      if (fakeres.statusCode !== 200) {
+        if (fakeres.statusCode !== expected) {
+          done(new Error('status code is not equal to expected'));
+          return;
+        }
+        done();
+      } else {
+        compare(output, expected, done);
+      }
+    },
     write: function(xml) {
-      async.parallel({
-        output: function(cb) {
-          xml2js.parseString(xml, cb);
-        },
-        expected: function(cb) {
-          xml2js.parseString(outputXml, cb);
-        }
-      }, function(err, data) {
-        if (err) return cb(err);
-        var output = data.output;
-        var expected = data.expected;
-        var toUserName = output.xml.ToUserName;
-        output.xml.ToUserName = output.xml.FromUserName;
-        output.xml.FromUserName = toUserName;
-        delete output.xml.CreateTime;
-        delete expected.xml.CreateTime;
-        try {
-          assert.deepEqual(output, expected);
-        } catch(e) {
-          return cb(e);
-        }
-        cb();
-      });
+      output += xml;
     }
   };
   var wechat = new Wechat({
     token: token
   });
-  wechat.on('text', onText);
+  wechat.on('text', handler);
+  wechat.on('error', function() {});
   parser(fakereq, fakeres, function(err) {
     if (err) return cb(err);
     wechat.handleRequest(fakereq, fakeres);
   });
 }
 
+function compare(output, expected, done) {
+  async.parallel({
+    _output: function(cb) {
+      xml2js.parseString(output, cb);
+    },
+    _expected: function(cb) {
+      xml2js.parseString(expected, cb);
+    }
+  }, function(err, data) {
+    if (err) return done(err);
 
+    var expected = data._expected.xml;
+    var output = data._output.xml;
+
+    // swap ToUserName and FromUserName
+    var toUserName = expected.ToUserName;
+    expected.ToUserName = expected.FromUserName;
+    expected.FromUserName = toUserName;
+
+    // do not compare CreateTime
+    delete expected.CreateTime;
+    delete output.CreateTime;
+
+    try {
+      assert.deepEqual(expected, output);
+    } catch (e) {
+      return done(new Error('output xml is not equal to expected xml'));
+    }
+
+    done();
+  });
+}
