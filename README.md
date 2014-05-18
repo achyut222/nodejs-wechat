@@ -21,13 +21,17 @@ wechat.on('event.subscribe', function(session) {
   session.replyTextMsg('欢迎您关注我们的订阅号');
 });
 var server = http.createServer(function(req, res) {
-  parse(req, res, function(err) {
-    if (err) {
-      res.end();
-      return;
-    }
-    wechat.handleRequest(req, res);
-  });
+  if (req.method === 'GET') {
+    wechat.verifyRequest(req, res);
+  } else {
+    parse(req, res, function(err) {
+      if (err) {
+        res.end();
+        return;
+      }
+      wechat.handleRequest(req, res);
+    });
+  }
 });
 server.listen(80);
 ```
