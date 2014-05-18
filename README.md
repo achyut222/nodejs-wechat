@@ -107,7 +107,8 @@ app.listen(80);
   in incoming message's `MsgType`, with a `Session` as parameter. Valid events: 
   >
   > `text`, `image`, `voice`, `video`, `location`, `link`, `event.subscribe`, 
-  `event.unsubscribe`, `event.SCAN`, `event.LOCATION`, `event.CLICK`, `event.VIEW`.
+  `event.unsubscribe`, `event.SCAN`, `event.LOCATION`, `event.CLICK`, `event.VIEW`,
+  `error`
   >
   > __References__: [接收普通消息](http://mp.weixin.qq.com/wiki/index.php?title=%E6%8E%A5%E6%94%B6%E6%99%AE%E9%80%9A%E6%B6%88%E6%81%AF "接收普通消息"), 
   [接收事件推送](http://mp.weixin.qq.com/wiki/index.php?title=%E6%8E%A5%E6%94%B6%E4%BA%8B%E4%BB%B6%E6%8E%A8%E9%80%81 "接收事件推送")
