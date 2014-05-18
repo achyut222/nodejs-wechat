@@ -66,9 +66,9 @@ function test(outputXml, onText, cb) {
   };
   fakereq.query.signature = util.signature(token, nonce, ts);
   var fakeres = {
-    type: function() {},
+    setHeader: function() {},
     end: function() {},
-    send: function(xml) {
+    write: function(xml) {
       async.parallel({
         output: function(cb) {
           xml2js.parseString(xml, cb);
