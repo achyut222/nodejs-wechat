@@ -161,4 +161,3 @@ Becomes
 
 ### TODO
 - Advanced interfaces
-  > Will finish advanced interfaces before July/2014, welcome send pull requests :)
