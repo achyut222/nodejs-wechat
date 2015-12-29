@@ -20,7 +20,7 @@ var parse = xmlBodyParser({
 });
 var wechat = new Wechat(opt);
 wechat.on('event.subscribe', function(session) {
-  session.replyTextMsg('欢迎您关注我们的订阅号');
+  session.replyTextMessage('欢迎您关注我们的订阅号');
 });
 var server = http.createServer(function(req, res) {
   if (req.method === 'GET') {
@@ -72,10 +72,10 @@ app.post('/weixin', wechat.handleRequest.bind(wechat));
 app.use('/api', middlewares.bodyParser());
 
 wechat.on('text', function(session) {
-  session.replyTextMsg('Hello World');
+  session.replyTextMessage('Hello World');
 });
 wechat.on('image', function(session) {
-  session.replyNewsMsg([{
+  session.replyNewsMessage([{
     Title: '新鲜事',
     Description: '点击查看今天的新鲜事',
     PicUrl: 'http://..',
@@ -83,7 +83,7 @@ wechat.on('image', function(session) {
   }]);
 });
 wechat.on('voice', function(session) {
-  session.replyMsg({
+  session.replyMessage({
     Title: 'This is Music',
     MsgType: 'music',
     Description: 'Listen to this music and guess ths singer',
