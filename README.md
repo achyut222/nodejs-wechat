@@ -1,4 +1,4 @@
-# Nodejs Wechat
+# Nodejs Wechat (Not Maintained)
 
   [![NPM version](https://badge.fury.io/js/nodejs-wechat.png)](http://badge.fury.io/js/nodejs-wechat) [![Build Status](https://travis-ci.org/idy/nodejs-wechat.svg?branch=master)](https://travis-ci.org/idy/nodejs-wechat)
 
